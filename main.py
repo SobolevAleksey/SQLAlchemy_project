@@ -49,7 +49,7 @@ class Order(db.Model):
 class Offer(db.Model):
     __tablename__ = 'offer'
     id = db.Column(db.Integer, primary_key=True)
-    order_id = customer_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+    customer_id = db.Column(db.Integer, db.ForeignKey('order.id'))
     executor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def to_dict(self):
