@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import data
 from datetime import datetime
 import json
-from flask import render_template
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 def get_response(data):
     return json.dumps(data), 200, {'Content Type': 'application/json; charset=utf-8'}
 
-
+# Создае модель User(может быть как исполнителем так и заказчиком в зависимости от 'role')
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -25,9 +25,13 @@ class User(db.Model):
     email = db.Column(db.String(100))
     role = db.Column(db.String(100))
     phone = db.Column(db.String(100))
-
+    
+   
     def to_dict(self):
-        return {col.name: getattr(self, col.name) for col in self.__table__.colums}
+        """
+        Функция, которая из объекта сделает словарь. 
+        """
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
 class Order(db.Model):
@@ -43,7 +47,10 @@ class Order(db.Model):
     executor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def to_dict(self):
-        return {col.name: getattr(self, col.name) for col in self.__table__.colums}
+        """
+        Функция, которая из объекта сделает словарь. 
+        """
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
 class Offer(db.Model):
@@ -53,18 +60,23 @@ class Offer(db.Model):
     executor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def to_dict(self):
-        return {col.name: getattr(self, col.name) for col in self.__table__.colums}
+        """
+        Функция, которая из объекта сделает словарь. 
+        """
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
-
+# Создаем таблицы
 with app.app_context():
     db.create_all()
-
+    
+    # Проходим циклом по 'users' в файле 'data'. И создаем новые колонки в таблице. 
     for user_data in data.users:
         new_user = User(**user_data)
         db.session.add(new_user)
         db.session.commit()
-
+    # Проходим циклом по 'orders' в файле 'data'. И создаем новые колонки в таблице.
     for order_data in data.orders:
+        #Функция получает сторку и формат и выдает данные в фомате datetime.
         order_data['start_date'] = datetime.strptime(order_data['start_date'], '%m/%d/%Y').date()
         order_data['end_date'] = datetime.strptime(order_data['end_date'], '%m/%d/%Y').date()
         new_order = Order(**order_data)
